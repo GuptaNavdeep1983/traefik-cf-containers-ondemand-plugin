@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
+	"encoding/json"
+	"strings"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -91,16 +92,54 @@ func TestOndemand_ServeHTTP(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-
-			mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				fmt.Fprint(w, test.status)
+			// Mock Server for Auth endpoint to generate token
+			mockServer1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if strings.Contains(r.URL.Path, "/oauth/token") {
+					loginResponse := LoginResponse{}
+					bytes, _ := json.Marshal(loginResponse)
+					fmt.Fprint(w, string(bytes[:]))
+				}
 			}))
-
-			defer mockServer.Close()
-
+			// Mock server for Resource end point to generate spaces, apps and info responses
+			defer mockServer1.Close()
+			mockServer2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if strings.Contains(r.URL.Path, "/v3/spaces") {
+					V3SpacesResponse := listV3SpacesResponse{}
+					V3SpacesResponse.Resources = 
+					[]V3Space{ 
+						{
+							GUID: "test-space-guid",
+						},
+					}
+					bytes, _ := json.Marshal(V3SpacesResponse)
+					fmt.Fprint(w, string(bytes[:]))
+				} else if strings.Contains(r.URL.Path, "/v3/apps/") {
+					appStartResponse := AppStartActionResponse{
+							State: test.status,
+					}
+					bytes, _ := json.Marshal(appStartResponse)
+					fmt.Fprint(w, string(bytes[:]))
+				} else if strings.Contains(r.URL.Path, "/v3/apps") {
+					V3AppsResponse := listV3AppsResponse{}
+					V3AppsResponse.Resources = []V3App{
+						{
+							GUID: "test-app-guid",
+						},
+					}
+					bytes, _ := json.Marshal(V3AppsResponse)
+					fmt.Fprint(w, string(bytes[:]))
+				} else {
+					endpoint := Endpoint{}
+					endpoint.AuthorizationEndpoint = mockServer1.URL
+					bytes, _ := json.Marshal(endpoint)
+					fmt.Fprint(w, string(bytes[:]))
+				}
+				
+			}))
+			defer mockServer2.Close()
+			next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 			config := &Config{
-				ApiEndpoint: "https://api.run.pivotal.io",
+				ApiEndpoint: mockServer2.URL,
 				OrgName: "DEFAULT_ORG",
 				SpaceName: "DEFAULT_SPACE",
 				Apps: "TEST_APP",
