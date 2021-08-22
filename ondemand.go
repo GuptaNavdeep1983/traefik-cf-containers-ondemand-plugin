@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 )
 
 const defaultApiEndpoint = "https://api.run.pivotal.io"
