@@ -31,6 +31,10 @@ type Config struct {
 func CreateConfig() *Config {
 	return &Config{
 		ApiEndpoint: "https://api.run.pivotal.io",
+		OrgName: "TEST_ORG",
+		SpaceName: "TEST_SPACE",
+		Apps: "APPS_TO_BE_SCALED",
+		Name: "traefik_cf_containers_ondemand"
 	}
 }
 
