@@ -39,7 +39,7 @@ type Ondemand struct {
 	name     string
 	next     http.Handler
 	config   Config
-	endpoint Endpoint
+	// endpoint Endpoint
 }
 
 // New function creates the configuration and end points
@@ -65,24 +65,18 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 		return nil, fmt.Errorf("Name cannot be null")
 	}
 
-	endpoint, err := GetInfo(*config)
-	if err != nil {
-		return nil, fmt.Errorf("Error while getting apiendpoint info")
-	}
-	log.Printf("%+v\n", endpoint)
-
 	return &Ondemand{
 		next:     next,
 		name:     name,
 		config:   *config,
-		endpoint: endpoint,
+		// endpoint: endpoint,
 	}, nil
 }
 
 // ServeHTTP retrieve the service status
 func (e *Ondemand) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
-	status, err := getServiceStatus(&e.endpoint, &e.config)
+	status, err := getServiceStatus(/*&e.endpoint,*/ &e.config)
 
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
@@ -104,7 +98,13 @@ func (e *Ondemand) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getServiceStatus(endpoint *Endpoint, config *Config) (string, error) {
+func getServiceStatus(/*endpoint *Endpoint,*/ config *Config) (string, error) {
+
+	endpoint, err := GetInfo(*config)
+	if err != nil {
+		return "error_starting", fmt.Errorf("Error while getting apiendpoint info")
+	}
+	log.Printf("%+v\n", endpoint)
 
 	// Get Access Token
 	loginResponse, err := GetToken(*config, endpoint.AuthorizationEndpoint)
