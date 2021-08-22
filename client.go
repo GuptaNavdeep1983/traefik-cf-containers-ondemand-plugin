@@ -32,7 +32,7 @@ type Endpoint struct {
 func GetInfo(config Config) (Endpoint, error) {
 	client := http.Client{}
 	var data Endpoint
-	req, err := http.NewRequest("GET", config.ApiEndpoint+"/v2/info", nil)
+	req, err := http.NewRequest("GET", config.ApiEndpoint + "/v2/info", nil)
 	if err != nil {
 		return data, err
 	}

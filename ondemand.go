@@ -10,11 +10,6 @@ import (
 
 const defaultApiEndpoint = "https://api.run.pivotal.io"
 
-// Net client is a custom client to timeout after 2 seconds if the service is not ready
-var netClient = &http.Client{
-	Timeout: time.Second * 2,
-}
-
 // Config the plugin configuration
 type Config struct {
 	Name        string
@@ -30,11 +25,13 @@ type Config struct {
 // CreateConfig creates a config with its default values
 func CreateConfig() *Config {
 	return &Config{
-		ApiEndpoint: "https://api.run.pivotal.io",
+		ApiEndpoint: defaultApiEndpoint,
 		OrgName: "TEST_ORG",
 		SpaceName: "TEST_SPACE",
 		Apps: "APPS_TO_BE_SCALED",
 		Name: "traefik_cf_containers_ondemand",
+		Username: "TEST_USER",
+		Password: "TEST_PASSWORD",
 	}
 }
 
