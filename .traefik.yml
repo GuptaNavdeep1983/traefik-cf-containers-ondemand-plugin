@@ -10,6 +10,6 @@ testData:
   orgName: ORG_NAME
   spaceName: SPACE_NAME
   apps: CF_APPS 
-  Username: CF_USERNAME
-  Password: CF_PASSWORD
+  username: CF_USERNAME
+  password: CF_PASSWORD
   name: TRAEFIK_CF_CONTAINERS_ONDEMAND
