@@ -72,12 +72,12 @@ func TestOndemand_ServeHTTP(t *testing.T) {
 	}{
 		{
 			desc:     "service is starting",
-			status:   "starting",
+			status:   "STARTING",
 			expected: 202,
 		},
 		{
 			desc:     "service is started",
-			status:   "started",
+			status:   "STARTED",
 			expected: 200,
 		},
 		{

@@ -83,11 +83,11 @@ func (e *Ondemand) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(err.Error()))
 	}
 
-	if status == "started" {
+	if status == "STARTED" {
 		// Service started forward request
 		e.next.ServeHTTP(rw, req)
 
-	} else if status == "starting" {
+	} else if status == "STARTING" {
 		// Service starting, notify client
 		rw.WriteHeader(http.StatusAccepted)
 		rw.Write([]byte("Service is starting..."))
