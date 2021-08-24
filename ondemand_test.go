@@ -152,7 +152,7 @@ func TestOndemand_ServeHTTP(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 
-			req := httptest.NewRequest(http.MethodGet, "http://mydomain/whoami", nil)
+			req := httptest.NewRequest(http.MethodGet, "http://mydomain/", nil)
 
 			ondemand.ServeHTTP(recorder, req)
 
