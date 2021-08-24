@@ -96,7 +96,7 @@ func UpdateAppEnvironment(config Config, apps []V3App) (bool, error) {
 		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 			log.Println("HTTP Status is in the 2xx range")
 		} else {
-			log.Println("HTTP Status:%s\n", err)
+			log.Printf("HTTP Status:%s\n", err)
 			return false, err
 		}
 	}
