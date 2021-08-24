@@ -86,17 +86,19 @@ func UpdateAppEnvironment(config Config, apps []V3App) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		req.Header.Set("Content-Type", "application/json")
+		
 		req.Header = http.Header{
 			"Authorization": []string{"Bearer " + config.Token},
 		}
+		req.Header.Set("Content-Type", "application/json")
+		
 		resp, err := client.Do(req)
 		defer resp.Body.Close()
 
 		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 			log.Println("HTTP Status is in the 2xx range")
 		} else {
-			log.Printf("HTTP Status:%s\n", err)
+			log.Println(resp.StatusCode)
 			return false, err
 		}
 	}
