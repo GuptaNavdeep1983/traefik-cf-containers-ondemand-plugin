@@ -80,7 +80,7 @@ func UpdateAppEnvironment(config Config, apps []V3App) (bool, error) {
 	loc, _ := time.LoadLocation("UTC")
     now := time.Now().In(loc)
 
-	var jsonStr = []byte(fmt.Sprintf("{ \"var\": { \"LAST_REQUEST_TIME\": %s } }", now))
+	var jsonStr = []byte(fmt.Sprintf("{ \"var\": { \"LAST_REQUEST_TIME\": \"%s\" } }", now))
 	for _, app := range apps {
 		req, err := http.NewRequest("PATCH", config.ApiEndpoint+"/v3/apps/"+app.GUID+"/environment_variables", bytes.NewBuffer(jsonStr))
 		if err != nil {
@@ -96,6 +96,7 @@ func UpdateAppEnvironment(config Config, apps []V3App) (bool, error) {
 		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
 			log.Println("HTTP Status is in the 2xx range")
 		} else {
+			log.Println("HTTP Status:%s\n", err)
 			return false, err
 		}
 	}
