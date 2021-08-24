@@ -108,6 +108,7 @@ func (e *Ondemand) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 func getServiceStatus(/*endpoint *Endpoint,*/ config *Config) (string, error) {
 
 	start := time.Now()
+
 	endpoint, err := GetInfo(*config)
 	if err != nil {
 		return "error_starting", fmt.Errorf("Error while getting apiendpoint info")
@@ -135,13 +136,20 @@ func getServiceStatus(/*endpoint *Endpoint,*/ config *Config) (string, error) {
 	}
 	log.Printf("%+v\n", apps)
 
+	// Update environment variable with last request time
+	status, err := UpdateAppEnvironment(*config, apps)
+	if err != nil {
+		return "error_starting", fmt.Errorf("Error in updating app environment")
+	}
+	log.Printf("App environment status:%t\n", status)
+
 	// Start Apps
 	appResponses, err := StartApps(*config, apps)
 	if err != nil {
 		return "error_starting", fmt.Errorf("Error in starting app using guids")
 	}
 	log.Printf("%+v\n", appResponses)
-
+	
 	duration := time.Since(start)
 	log.Printf("Time to process the middleware:%s", duration)
 

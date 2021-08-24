@@ -1,9 +1,12 @@
 package traefik_cf_containers_ondemand_plugin
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"time"
+	"log"
+	"fmt"
 )
 
 type AppStartActionResponse struct {
@@ -70,4 +73,31 @@ func StartApps(config Config, apps []V3App) ([]AppStartActionResponse, error) {
 		responses = append(responses, data)
 	}
 	return responses, nil
+}
+func UpdateAppEnvironment(config Config, apps []V3App) (bool, error) {
+	client := http.Client{}
+	// Set last request time in UTC
+	loc, _ := time.LoadLocation("UTC")
+    now := time.Now().In(loc)
+
+	var jsonStr = []byte(fmt.Sprintf("{ \"var\": { \"LAST_REQUEST_TIME\": %s } }", now))
+	for _, app := range apps {
+		req, err := http.NewRequest("PATCH", config.ApiEndpoint+"/v3/apps/"+app.GUID+"/environment_variables", bytes.NewBuffer(jsonStr))
+		if err != nil {
+			return false, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header = http.Header{
+			"Authorization": []string{"Bearer " + config.Token},
+		}
+		resp, err := client.Do(req)
+		defer resp.Body.Close()
+
+		if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+			log.Println("HTTP Status is in the 2xx range")
+		} else {
+			return false, err
+		}
+	}
+	return true, nil
 }

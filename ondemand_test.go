@@ -128,6 +128,8 @@ func TestOndemand_ServeHTTP(t *testing.T) {
 					}
 					bytes, _ := json.Marshal(V3AppsResponse)
 					fmt.Fprint(w, string(bytes[:]))
+				} else if strings.Contains(r.URL.Path, "environment_variables") {
+					w.WriteHeader(http.StatusOK)
 				} else {
 					endpoint := Endpoint{}
 					endpoint.AuthorizationEndpoint = mockServer1.URL
