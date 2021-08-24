@@ -22,6 +22,7 @@ type listV3AppsResponse struct {
 type V3App struct {
 	Name string `json:"name,omitempty"`
 	GUID string `json:"guid,omitempty"`
+	State string `json:"state,omitempty"`
 }
 
 func GetAppIds(config Config, spaceGuid string) ([]V3App, error) {

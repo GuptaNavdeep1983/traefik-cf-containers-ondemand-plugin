@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 const defaultApiEndpoint = "https://api.run.pivotal.io"
@@ -76,30 +77,37 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 // ServeHTTP retrieve the service status
 func (e *Ondemand) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
-	status, err := getServiceStatus(/*&e.endpoint,*/ &e.config)
+	// Expectedly only the initial request would have the path as / and all 
+	// subsequent requests would be different
+	if req.URL.Path == "/" {
+		status, err := getServiceStatus(/*&e.endpoint,*/ &e.config)
 
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte(err.Error()))
-	}
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte(err.Error()))
+		}
 
-	if status == "STARTED" {
-		// Service started forward request
+		if status == "STARTED" {
+			// Service started forward request
+			e.next.ServeHTTP(rw, req)
+
+		} else if status == "STARTING" {
+			// Service starting, notify client
+			rw.WriteHeader(http.StatusAccepted)
+			rw.Write([]byte("Service is starting..."))
+		} else {
+			// Error
+			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Write([]byte("Unexpected status answer from ondemand service"))
+		}
+	}else {
 		e.next.ServeHTTP(rw, req)
-
-	} else if status == "STARTING" {
-		// Service starting, notify client
-		rw.WriteHeader(http.StatusAccepted)
-		rw.Write([]byte("Service is starting..."))
-	} else {
-		// Error
-		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("Unexpected status answer from ondemand service"))
 	}
 }
 
 func getServiceStatus(/*endpoint *Endpoint,*/ config *Config) (string, error) {
 
+	start := time.Now()
 	endpoint, err := GetInfo(*config)
 	if err != nil {
 		return "error_starting", fmt.Errorf("Error while getting apiendpoint info")
@@ -133,6 +141,9 @@ func getServiceStatus(/*endpoint *Endpoint,*/ config *Config) (string, error) {
 		return "error_starting", fmt.Errorf("Error in starting app using guids")
 	}
 	log.Printf("%+v\n", appResponses)
+
+	duration := time.Since(start)
+	log.Printf("Time to process the middleware:%s", duration)
 
 	return appResponses[0].State, nil
 }
